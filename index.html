@@ -1,1146 +1,523 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M³-OS (MOS) - Open Concept & Development Platform</title>
-    <!-- Tailwind CSS CDN -->
+    <title>M³-OS (MOS) — Modern Embedded OS for ESP32</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: JetBrains Mono & Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        darkbg: '#0D1117',
-                        cardbg: '#161B22',
-                        bordercolor: '#30363D',
-                        core: '#00A8FF',
-                        lcd: '#FF8C00',
-                        oled: '#00FFC4',
-                        hack: '#FF0040',
+                        studioBg: '#F3F4F6',
+                        studioCard: '#FFFFFF',
+                        studioDark: '#121316',
+                        studioMuted: '#6B7280',
+                        sage: '#8A9A86',
+                        terracotta: '#D48C7A',
+                        slateTone: '#343A40',
+                        coreBlue: '#00A8FF',
+                        lcdOrange: '#FF8C00',
+                        oledGreen: '#00FF66',
+                        hackRed: '#FF0040'
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    boxShadow: {
-                        'glow-core': '0 0 20px rgba(0, 168, 255, 0.35)',
-                        'glow-lcd': '0 0 20px rgba(255, 140, 0, 0.35)',
-                        'glow-oled': '0 0 20px rgba(0, 255, 196, 0.35)',
-                        'glow-hack': '0 0 20px rgba(255, 0, 64, 0.35)',
                     }
                 }
             }
         }
     </script>
-
-    <style>
-        body {
-            background-color: #0D1117;
-            color: #C9D1D9;
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
-
-        .glitch-btn {
-            position: relative;
-            transition: all 0.2s ease;
-        }
-        .glitch-btn:hover {
-            box-shadow: 0 0 15px currentColor;
-            transform: translateY(-2px);
-        }
-
-        .glass-card {
-            background: rgba(22, 27, 34, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(48, 54, 61, 0.8);
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0D1117;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #30363D;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #484F58;
-        }
-
-        .terminal-screen {
-            background-color: #05070a;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
-        }
-
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0;
-            pointer-events: none;
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
 </head>
-<body class="relative min-h-screen flex flex-col antialiased selection:bg-core selection:text-black">
+<body class="bg-studioBg text-studioDark font-sans antialiased selection:bg-sage/30">
 
-    <!-- Interactive Grid / Circuit Particle Canvas -->
-    <canvas id="bg-canvas"></canvas>
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-studioBg/80 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 bg-studioDark text-white rounded-xl flex items-center justify-center font-mono font-bold text-lg shadow-sm">
+                    M³
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold tracking-tight text-lg">M³-OS</span>
+                        <span class="bg-amber-100 text-amber-800 text-[10px] font-mono px-2 py-0.5 rounded-full font-semibold border border-amber-300">CONCEPT / WIP</span>
+                    </div>
+                </div>
+            </div>
 
-    <!-- App Container -->
-    <div class="relative z-10 flex flex-col min-h-screen">
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-studioMuted">
+                <a href="#variants" class="hover:text-studioDark transition-colors">OS Variants</a>
+                <a href="#hardware" class="hover:text-studioDark transition-colors">ESP32 Board</a>
+                <a href="#extensions" class="hover:text-studioDark transition-colors">Extensions</a>
+                <a href="#tools" class="hover:text-studioDark transition-colors">Builder & REPL</a>
+                <a href="#join" class="hover:text-studioDark transition-colors">Join Project</a>
+            </nav>
 
-        <!-- Top Concept Banner -->
-        <div class="bg-amber-500/10 border-b border-amber-500/30 text-amber-400 py-2 px-4 text-center font-mono text-xs flex flex-wrap items-center justify-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-            <span class="font-bold">PROJECT STATUS: CONCEPT & IN ACTIVE DEVELOPMENT</span>
-            <span class="text-gray-400">| Want to contribute or build together?</span>
-            <a href="#join-project" class="underline hover:text-white font-bold ml-1">Join the Team &rarr;</a>
+            <a href="#join" class="bg-studioDark text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-black transition-all shadow-sm flex items-center space-x-2">
+                <i data-lucide="mail" class="w-4 h-4"></i>
+                <span>Collaborate</span>
+            </a>
         </div>
+    </header>
 
-        <!-- Navigation Header -->
-        <header class="sticky top-0 z-50 glass-card border-b border-bordercolor/60 bg-darkbg/90 backdrop-blur-md">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    
-                    <!-- Logo -->
-                    <a href="#" class="flex items-center gap-3 group">
-                        <div class="relative w-9 h-9 bg-darkbg border border-bordercolor rounded-lg flex items-center justify-center font-mono font-bold text-white group-hover:border-core transition-colors">
-                            <span>M³</span>
-                            <div class="absolute -top-1 -right-1 flex gap-0.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-core animate-pulse"></span>
-                                <span class="w-1.5 h-1.5 rounded-full bg-lcd"></span>
-                                <span class="w-1.5 h-1.5 rounded-full bg-oled"></span>
-                                <span class="w-1.5 h-1.5 rounded-full bg-hack"></span>
-                            </div>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="font-mono font-bold text-base text-white tracking-wider leading-tight">MOS<span class="text-core">.OS</span></span>
-                            <span class="text-[9px] font-mono text-amber-400 leading-none">DEV CONCEPT</span>
-                        </div>
+    <main class="max-w-7xl mx-auto px-6 py-12 space-y-20">
+
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-6 space-y-6">
+                <div class="inline-flex items-center space-x-2 bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm text-xs font-mono">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>PROJECT STATUS: ACTIVE CONCEPT DEVELOPMENT</span>
+                </div>
+                
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-studioDark leading-[1.1]">
+                    One Board.<br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 via-stone-700 to-amber-700">Four OS Souls.</span>
+                </h1>
+
+                <p class="text-base sm:text-lg text-studioMuted max-w-xl leading-relaxed">
+                    M³-OS turns a standard ESP32-WROOM development board into a multi-personality ecosystem. Switch between real-time MicroPython RTOS, rich GUI display engines, compact monochrome OLED readouts, or bare-metal C++ security toolkits.
+                </p>
+
+                <div class="flex flex-wrap items-center gap-4 pt-2">
+                    <a href="#variants" class="bg-studioDark text-white px-6 py-3 rounded-2xl font-medium text-sm hover:bg-black transition-all shadow-md flex items-center space-x-2">
+                        <span>Explore Variants</span>
+                        <i data-lucide="arrow-down" class="w-4 h-4"></i>
                     </a>
+                    <a href="#join" class="bg-white border border-gray-300 text-studioDark px-6 py-3 rounded-2xl font-medium text-sm hover:bg-gray-50 transition-all shadow-sm">
+                        Request Early Access
+                    </a>
+                </div>
 
-                    <!-- Nav Links -->
-                    <nav class="hidden lg:flex items-center space-x-5 text-sm font-medium">
-                        <a href="#variants" class="text-gray-300 hover:text-core transition-colors">Variants</a>
-                        <a href="#extensions" class="text-gray-300 hover:text-oled transition-colors">Extensions</a>
-                        <a href="#comparison" class="text-gray-300 hover:text-lcd transition-colors">Comparison</a>
-                        <a href="#downloads" class="text-gray-300 hover:text-hack transition-colors">Roadmap & Downloads</a>
-                        <a href="#join-project" class="text-amber-400 font-bold hover:text-amber-300 transition-colors"><i class="fa-solid fa-code-branch mr-1"></i>Join Project</a>
-                        <a href="#terminal" class="text-gray-300 hover:text-lcd transition-colors">REPL Simulator</a>
-                    </nav>
+                <div class="pt-4 grid grid-cols-3 gap-4 border-t border-gray-200 font-mono text-xs">
+                    <div>
+                        <div class="text-studioMuted">TARGET CHIP</div>
+                        <div class="font-bold text-studioDark">ESP32-WROOM-32D</div>
+                    </div>
+                    <div>
+                        <div class="text-studioMuted">CLOCK SPEED</div>
+                        <div class="font-bold text-studioDark">240 MHz Dual-Core</div>
+                    </div>
+                    <div>
+                        <div class="text-studioMuted">REPOSITORIES</div>
+                        <div class="font-bold text-amber-600">Open Dev Soon</div>
+                    </div>
+                </div>
+            </div>
 
-                    <!-- Search & Action -->
-                    <div class="flex items-center gap-3">
-                        <div class="relative hidden sm:block">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-gray-500"></i>
-                            <input type="text" id="docSearch" placeholder="Search concept docs..." class="bg-darkbg/80 text-xs text-gray-200 pl-8 pr-3 py-1.5 rounded-md border border-bordercolor focus:outline-none focus:border-core w-36 focus:w-48 transition-all font-mono">
-                        </div>
+            <!-- ESP32 Interactive Board Container -->
+            <div id="hardware" class="lg:col-span-6 bg-white border border-gray-200/80 rounded-3xl p-8 shadow-xl relative overflow-hidden">
+                <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="cpu" class="w-5 h-5 text-studioDark"></i>
+                        <span class="font-mono text-xs font-bold uppercase tracking-wider text-studioDark">ESP32-DevKit v1 Reference Board</span>
+                    </div>
+                    <span class="text-xs font-mono text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">Interactive Model</span>
+                </div>
+
+                <!-- SVG ESP32 Board Illustration -->
+                <div class="relative flex justify-center py-4 bg-gray-900 rounded-2xl p-6 border border-gray-800 shadow-inner">
+                    <svg class="w-full max-w-xs h-auto drop-shadow-2xl" viewBox="0 0 280 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- PCB Base -->
+                        <rect x="20" y="20" width="240" height="440" rx="16" fill="#18181B" stroke="#27272A" stroke-width="2"/>
+                        <rect x="24" y="24" width="232" height="432" rx="12" fill="#09090B"/>
                         
-                        <a href="#join-project" class="glitch-btn bg-amber-400 hover:bg-amber-300 text-black font-bold font-mono text-xs px-4 py-2 rounded-md flex items-center gap-2 transition-all shadow-glow-lcd">
-                            <i class="fa-solid fa-users"></i> Wanna Join?
-                        </a>
+                        <!-- Header Pins Left -->
+                        <g fill="#A1A1AA">
+                            <rect x="8" y="60" width="12" height="360" rx="2" fill="#27272A"/>
+                            <circle cx="14" cy="80" r="4" fill="#E4E4E7"/><circle cx="14" cy="100" r="4" fill="#E4E4E7"/>
+                            <circle cx="14" cy="120" r="4" fill="#E4E4E7"/><circle cx="14" cy="140" r="4" fill="#E4E4E7"/>
+                            <circle cx="14" cy="160" r="4" fill="#E4E4E7"/><circle cx="14" cy="180" r="4" fill="#E4E4E7"/>
+                            <circle cx="14" cy="200" r="4" fill="#E4E4E7"/><circle cx="14" cy="220" r="4" fill="#E4E4E7"/>
+                            <circle cx="14" cy="240" r="4" fill="#E4E4E7"/><circle cx="14" cy="260" r="4" fill="#E4E4E7"/>
+                            <circle cx="14" cy="280" r="4" fill="#E4E4E7"/><circle cx="14" cy="300" r="4" fill="#E4E4E7"/>
+                            <circle cx="14" cy="320" r="4" fill="#E4E4E7"/><circle cx="14" cy="340" r="4" fill="#E4E4E7"/>
+                            <circle cx="14" cy="360" r="4" fill="#E4E4E7"/><circle cx="14" cy="380" r="4" fill="#E4E4E7"/>
+                            <circle cx="14" cy="400" r="4" fill="#E4E4E7"/>
+                        </g>
 
-                        <!-- Mobile Menu Toggle -->
-                        <button id="menuToggle" class="lg:hidden p-2 text-gray-400 hover:text-white">
-                            <i class="fa-solid fa-bars text-xl"></i>
-                        </button>
+                        <!-- Header Pins Right -->
+                        <g fill="#A1A1AA">
+                            <rect x="260" y="60" width="12" height="360" rx="2" fill="#27272A"/>
+                            <circle cx="266" cy="80" r="4" fill="#E4E4E7"/><circle cx="266" cy="100" r="4" fill="#E4E4E7"/>
+                            <circle cx="266" cy="120" r="4" fill="#E4E4E7"/><circle cx="266" cy="140" r="4" fill="#E4E4E7"/>
+                            <circle cx="266" cy="160" r="4" fill="#E4E4E7"/><circle cx="266" cy="180" r="4" fill="#E4E4E7"/>
+                            <circle cx="266" cy="200" r="4" fill="#E4E4E7"/><circle cx="266" cy="220" r="4" fill="#E4E4E7"/>
+                            <circle cx="266" cy="240" r="4" fill="#E4E4E7"/><circle cx="266" cy="260" r="4" fill="#E4E4E7"/>
+                            <circle cx="266" cy="280" r="4" fill="#E4E4E7"/><circle cx="266" cy="300" r="4" fill="#E4E4E7"/>
+                            <circle cx="266" cy="320" r="4" fill="#E4E4E7"/><circle cx="266" cy="340" r="4" fill="#E4E4E7"/>
+                            <circle cx="266" cy="360" r="4" fill="#E4E4E7"/><circle cx="266" cy="380" r="4" fill="#E4E4E7"/>
+                            <circle cx="266" cy="400" r="4" fill="#E4E4E7"/>
+                        </g>
+
+                        <!-- ESP32 Metal Can Shield -->
+                        <rect x="60" y="70" width="160" height="200" rx="8" fill="#D4D4D8" stroke="#A1A1AA" stroke-width="2"/>
+                        <!-- Antenna Trace Area -->
+                        <path d="M 90 70 L 90 40 L 190 40 L 190 70" stroke="#E4E4E7" stroke-width="3" fill="none"/>
+                        <path d="M 100 70 L 100 50 L 180 50 L 180 70" stroke="#E4E4E7" stroke-width="2" fill="none"/>
+                        
+                        <!-- Metal Shield Text -->
+                        <text x="140" y="130" fill="#3F3F46" font-family="monospace" font-size="14" font-weight="bold" text-anchor="middle">ESP32-WROOM-32D</text>
+                        <text x="140" y="150" fill="#52525B" font-family="monospace" font-size="10" text-anchor="middle">FCC ID: 2AC7Z-ESPWROOM32D</text>
+                        <text x="140" y="170" fill="#52525B" font-family="monospace" font-size="10" text-anchor="middle">KCC-CRM-es5-ESPWROOM32D</text>
+                        <rect x="110" y="190" width="60" height="60" rx="4" fill="#A1A1AA"/>
+
+                        <!-- USB Port -->
+                        <rect x="110" y="430" width="60" height="30" rx="4" fill="#71717A" stroke="#52525B"/>
+                        <rect x="120" y="440" width="40" height="20" rx="2" fill="#27272A"/>
+
+                        <!-- CP2102 Serial Chip & Components -->
+                        <rect x="115" y="320" width="50" height="50" rx="4" fill="#18181B" stroke="#3F3F46"/>
+                        <text x="140" y="350" fill="#71717A" font-family="monospace" font-size="9" text-anchor="middle">SILICON</text>
+                        <text x="140" y="360" fill="#71717A" font-family="monospace" font-size="8" text-anchor="middle">CP2102</text>
+
+                        <!-- EN & BOOT Buttons -->
+                        <rect x="40" y="410" width="30" height="20" rx="4" fill="#3F3F46"/>
+                        <circle cx="55" cy="420" r="5" fill="#EF4444"/>
+                        <text x="55" y="402" fill="#A1A1AA" font-family="monospace" font-size="8" text-anchor="middle">EN</text>
+
+                        <rect x="210" y="410" width="30" height="20" rx="4" fill="#3F3F46"/>
+                        <circle cx="225" cy="420" r="5" fill="#3B82F6"/>
+                        <text x="225" y="402" fill="#A1A1AA" font-family="monospace" font-size="8" text-anchor="middle">BOOT</text>
+
+                        <!-- Status LEDs -->
+                        <circle cx="70" cy="300" r="4" fill="#22C55E" class="animate-pulse"/>
+                        <text x="70" y="290" fill="#A1A1AA" font-family="monospace" font-size="8" text-anchor="middle">PWR</text>
+                        
+                        <circle cx="210" cy="300" r="4" fill="#3B82F6"/>
+                        <text x="210" y="290" fill="#A1A1AA" font-family="monospace" font-size="8" text-anchor="middle">TX/RX</text>
+                    </svg>
+                </div>
+
+                <div class="mt-6 flex items-center justify-between font-mono text-xs text-studioMuted">
+                    <span>ESP-IDF v5.1 Ready</span>
+                    <span>Dual Xtensa LX6 @ 240MHz</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="variants" class="space-y-8">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <span class="text-xs font-mono font-bold tracking-widest text-studioMuted uppercase">Four Operating Personalities</span>
+                <h2 class="text-3xl font-bold tracking-tight text-studioDark">Choose Your Variant</h2>
+                <p class="text-studioMuted text-sm">
+                    Each M³-OS firmware edition is tailored for specific use cases while maintaining hardware compatibility.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- MOS-Core -->
+                <div class="bg-white border border-gray-200 rounded-3xl p-6 space-y-4 hover:shadow-lg transition-all border-t-4 border-t-blue-500">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                            <i data-lucide="cpu" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md font-semibold">MicroPython</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-studioDark">MOS-Core</h3>
+                        <p class="text-xs text-studioMuted mt-1">Real-time RTOS kernel with Zephyr-like preemptive multitasking.</p>
+                    </div>
+                    <ul class="space-y-2 text-xs text-studioMuted font-mono">
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-blue-500"></i><span>Preemptive scheduler</span></li>
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-blue-500"></i><span>Asyncio + Threads</span></li>
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-blue-500"></i><span>~80KB RAM footprint</span></li>
+                    </ul>
+                </div>
+
+                <!-- MOS-LCD -->
+                <div class="bg-white border border-gray-200 rounded-3xl p-6 space-y-4 hover:shadow-lg transition-all border-t-4 border-t-amber-500">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                            <i data-lucide="layout" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] font-mono bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-semibold">Touch GUI</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-studioDark">MOS-LCD</h3>
+                        <p class="text-xs text-studioMuted mt-1">Full color touch display OS with app layout customizable drivers.</p>
+                    </div>
+                    <ul class="space-y-2 text-xs text-studioMuted font-mono">
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-500"></i><span>ILI9341 / ST7789 TFT</span></li>
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-500"></i><span>App Drawer & Skins</span></li>
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-amber-500"></i><span>~120KB RAM footprint</span></li>
+                    </ul>
+                </div>
+
+                <!-- MOS-OLED -->
+                <div class="bg-white border border-gray-200 rounded-3xl p-6 space-y-4 hover:shadow-lg transition-all border-t-4 border-t-emerald-500">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                            <i data-lucide="tv" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-semibold">Monochrome</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-studioDark">MOS-OLED</h3>
+                        <p class="text-xs text-studioMuted mt-1">Lightweight sub-variant optimized for SSD1306/SH1106 screens.</p>
+                    </div>
+                    <ul class="space-y-2 text-xs text-studioMuted font-mono">
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i><span>SSD1306 / SH1106</span></li>
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i><span>Low power telemetry</span></li>
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i><span>~45KB RAM footprint</span></li>
+                    </ul>
+                </div>
+
+                <!-- MOS-Hack -->
+                <div class="bg-white border border-gray-200 rounded-3xl p-6 space-y-4 hover:shadow-lg transition-all border-t-4 border-t-rose-500">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] font-mono bg-rose-100 text-rose-800 px-2 py-0.5 rounded-md font-semibold">Native C++</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-studioDark">MOS-Hack</h3>
+                        <p class="text-xs text-studioMuted mt-1">Bare-metal penetration testing & wireless auditing toolkit.</p>
+                    </div>
+                    <ul class="space-y-2 text-xs text-studioMuted font-mono">
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-rose-500"></i><span>Wi-Fi / BLE Scanner</span></li>
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-rose-500"></i><span>BadUSB HID Injection</span></li>
+                        <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-rose-500"></i><span>Raw radio access</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Use Cases Section -->
+        <section id="usecases" class="space-y-10">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <span class="text-xs font-mono font-bold tracking-widest text-studioMuted uppercase">Real-World Deployment</span>
+                <h2 class="text-3xl font-bold tracking-tight text-studioDark">Target Use Cases</h2>
+                <p class="text-studioMuted text-sm">
+                    Discover how each M³-OS variant solves distinct engineering, UI, and security challenges on ESP32 hardware.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- MOS-Core Use Cases -->
+                <div class="bg-white border border-gray-200/80 rounded-3xl p-8 space-y-6 shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center space-x-3 pb-4 border-b border-gray-100">
+                        <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <i data-lucide="cpu" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-studioDark">MOS-Core</h3>
+                            <span class="text-xs font-mono text-blue-600 font-medium">Real-Time Python Kernel</span>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="factory" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">Industrial IoT & Sensors</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Read high-frequency pressure and temperature sensors over SPI/I2C and stream data via MQTT with RTOS timing guarantees.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="gauge" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">High-Precision Motor Control</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Execute closed-loop PID motor routines at 1 kHz on Core 1 while asynchronously handling incoming UART control commands.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="router" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">Smart Home Hub Gateway</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Concurrently handle Wi-Fi, BLE, and Zigbee worker threads using `asyncio` and thread-safe message queues.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Mobile Menu Dropdown -->
-                <div id="mobileMenu" class="hidden lg:hidden py-4 border-t border-bordercolor flex flex-col gap-3 font-mono text-sm">
-                    <a href="#variants" class="px-2 py-1 text-gray-300 hover:text-core">Variants</a>
-                    <a href="#extensions" class="px-2 py-1 text-gray-300 hover:text-oled">Extensions</a>
-                    <a href="#comparison" class="px-2 py-1 text-gray-300 hover:text-lcd">Comparison</a>
-                    <a href="#downloads" class="px-2 py-1 text-gray-300 hover:text-hack">Roadmap & Downloads</a>
-                    <a href="#join-project" class="px-2 py-1 text-amber-400 font-bold">Wanna Join the Project?</a>
-                    <a href="#terminal" class="px-2 py-1 text-gray-300 hover:text-lcd">REPL Simulator</a>
+                <!-- MOS-LCD Use Cases -->
+                <div class="bg-white border border-gray-200/80 rounded-3xl p-8 space-y-6 shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center space-x-3 pb-4 border-b border-gray-100">
+                        <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                            <i data-lucide="layout" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-studioDark">MOS-LCD</h3>
+                            <p class="text-xs font-mono text-amber-600 font-medium">Graphical UI OS</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="gamepad-2" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">Handheld Gadgets & Consoles</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Build portable weather terminals, pocket gaming systems (Snake, Tetris), and touch menu systems completely in Python.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="printer" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">Smart Appliance Panels</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Interactive control panels for 3D printers, coffee machines, and HVAC units with full touch and button support.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="bot" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">Robot Telemetry Dashboards</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Display real-time camera feeds, battery statistics, sensor charts, and motor diagnostic controls.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MOS-OLED Use Cases -->
+                <div class="bg-white border border-gray-200/80 rounded-3xl p-8 space-y-6 shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center space-x-3 pb-4 border-b border-gray-100">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <i data-lucide="tv" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-studioDark">MOS-OLED</h3>
+                            <p class="text-xs font-mono text-emerald-600 font-medium">Monochrome Micro OS</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="watch" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">Low-Power Wearables</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Minimalist smart wristwear, notification badges, and step-counters using SSD1306 displays with ultra-low RAM draw.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="activity" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">Field Telemetry Monitors</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Compact status monitors for solar charge controllers, battery packs, and remote environmental loggers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MOS-Hack Use Cases -->
+                <div class="bg-white border border-gray-200/80 rounded-3xl p-8 space-y-6 shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center space-x-3 pb-4 border-b border-gray-100">
+                        <div class="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-studioDark">MOS-Hack</h3>
+                            <p class="text-xs font-mono text-rose-600 font-medium">Native C++ Pentest Toolkit</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="wifi-off" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">Wi-Fi Reconnaissance & Auditing</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Perform deauth testing, PMKID key handshake capturing, and evil twin captive portal assessments.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="usb" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">BadUSB Payload Injection</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Emulate a trusted USB HID keyboard to execute rubber-ducky style security testing scripts natively.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="p-1.5 bg-gray-100 rounded-lg text-studioDark mt-0.5"><i data-lucide="radio" class="w-4 h-4"></i></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-studioDark">Sub-GHz & RF Analysis</h4>
+                                <p class="text-xs text-studioMuted mt-0.5">Sniff, log, and replay RF signals using integrated CC1101 or NRF24L01 hardware modules.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </header>
+        </section>
 
-        <!-- Hero Section -->
-        <section class="relative pt-12 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center flex flex-col items-center justify-center">
+        <section id="join" class="bg-studioDark text-white rounded-3xl p-8 lg:p-12 space-y-8 relative overflow-hidden shadow-2xl">
+            <div class="max-w-3xl space-y-4">
+                <span class="bg-amber-500/20 text-amber-400 font-mono text-xs px-3 py-1 rounded-full uppercase tracking-wider font-semibold border border-amber-500/30">
+                    Wanna Join the Project?
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">Let's Build M³-OS Together</h2>
+                <p class="text-gray-400 text-sm sm:text-base leading-relaxed">
+                    M³-OS is currently an ambitious concept in early active development. We are actively looking for embedded C/C++ developers, MicroPython experts, hardware designers, and security researchers to bring this vision to life.
+                </p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+                <div class="bg-gray-800/80 border border-gray-700 rounded-2xl px-5 py-3.5 flex items-center justify-between space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="mail" class="w-5 h-5 text-amber-400"></i>
+                        <span class="font-mono text-sm text-gray-200">hiremathsangamesh034@gmail.com</span>
+                    </div>
+                    <button onclick="copyEmail()" id="copyBtn" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-mono transition-colors">
+                        Copy
+                    </button>
+                </div>
+
+                <a href="mailto:hiremathsangamesh034@gmail.com" class="bg-amber-500 hover:bg-amber-400 text-black font-medium px-6 py-3.5 rounded-2xl text-sm transition-all flex items-center justify-center space-x-2 shadow-lg">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    <span>Send Direct Email</span>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-gray-200 mt-20 bg-white py-12 text-xs text-studioMuted">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center space-x-3">
+                <div class="w-6 h-6 bg-studioDark text-white rounded-md flex items-center justify-center font-mono font-bold text-xs">
+                    M³
+                </div>
+                <span class="font-bold text-studioDark">M³-OS (MOS)</span>
+                <span>— Concept Project by Sangamesh Hiremath</span>
+            </div>
             
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-mono text-amber-400 mb-6 backdrop-blur-sm">
-                <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-                <span>Work in Progress / Conceptual Phase — Open for Contributors</span>
-            </div>
-
-            <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight font-mono mb-6">
-                One board. <span class="bg-clip-text text-transparent bg-gradient-to-r from-core via-oled to-hack">Four souls.</span>
-            </h1>
-
-            <p class="max-w-3xl text-lg sm:text-xl text-gray-400 mb-8 leading-relaxed">
-                M³-OS (MOS) is an upcoming open-source operating system architecture designed to give ESP32 hardware modular personalities: <strong class="text-core font-semibold">MOS-Core</strong>, <strong class="text-lcd font-semibold">MOS-LCD</strong>, <strong class="text-oled font-semibold font-mono">MOS-OLED</strong>, and <strong class="text-hack font-semibold font-mono">MOS-Hack</strong>.
-            </p>
-
-            <div class="flex flex-wrap justify-center gap-4 w-full max-w-md sm:max-w-none mb-10">
-                <a href="#join-project" class="glitch-btn bg-amber-400 text-black hover:bg-amber-300 px-6 py-3.5 rounded-lg font-mono font-bold text-sm flex items-center justify-center gap-2 shadow-glow-lcd w-full sm:w-auto">
-                    <i class="fa-solid fa-code-branch"></i> Join as Developer / Collaborator
-                </a>
-                <a href="#variants" class="glass-card text-core border border-core/40 hover:border-core px-6 py-3.5 rounded-lg font-mono text-sm flex items-center justify-center gap-2 w-full sm:w-auto transition-all">
-                    <i class="fa-solid fa-layer-group"></i> Explore OS Variants Concept
-                </a>
-                <a href="#terminal" class="glass-card text-gray-300 border border-bordercolor hover:border-lcd px-6 py-3.5 rounded-lg font-mono text-sm flex items-center justify-center gap-2 w-full sm:w-auto transition-all">
-                    <i class="fa-solid fa-terminal"></i> Try Shell REPL Simulator
-                </a>
-            </div>
-
-            <div class="p-4 glass-card rounded-2xl border border-bordercolor flex flex-wrap items-center justify-center gap-8 text-xs font-mono text-gray-400">
-                <div class="flex items-center gap-2"><i class="fa-solid fa-lightbulb text-amber-400 text-base"></i> Status: Concept Phase</div>
-                <div class="flex items-center gap-2"><i class="fa-solid fa-microchip text-core text-base"></i> Target: ESP32 / ESP32-S3</div>
-                <div class="flex items-center gap-2"><i class="fa-solid fa-puzzle-piece text-oled text-base"></i> Software & Hardware Extensible</div>
-                <div class="flex items-center gap-2"><i class="fa-solid fa-envelope text-hack text-base"></i> Open to Team Lead & Devs</div>
-            </div>
-        </section>
-
-        <!-- "WANNA JOIN THE PROJECT?" / CALL TO ACTION SECTION -->
-        <section id="join-project" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-            <div class="glass-card rounded-2xl p-6 sm:p-10 border border-amber-500/40 relative overflow-hidden shadow-glow-lcd">
-                <div class="absolute -top-12 -right-12 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-                
-                <div class="grid lg:grid-cols-2 gap-8 items-center">
-                    <div>
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 font-mono text-xs mb-4">
-                            <i class="fa-solid fa-handshake"></i> Collaborators & Contributors Wanted
-                        </div>
-                        <h2 class="text-3xl sm:text-4xl font-extrabold font-mono text-white mb-4">
-                            Wanna Join the M³-OS Project?
-                        </h2>
-                        <p class="text-sm text-gray-300 mb-6 leading-relaxed">
-                            M³-OS is currently in its conceptual design phase ("Just an Idea / Work in Progress"). We are actively looking for passionate <strong>Embedded C/C++ developers</strong>, <strong>MicroPython enthusiasts</strong>, <strong>UI/UX designers</strong>, and <strong>hardware engineers</strong> to bring this modular OS vision to life.
-                        </p>
-
-                        <div class="space-y-3 font-mono text-xs text-gray-300 mb-6">
-                            <div class="flex items-center gap-3"><i class="fa-solid fa-check text-amber-400"></i> Embedded C/C++ Kernel Engineers (FreeRTOS / ESP-IDF)</div>
-                            <div class="flex items-center gap-3"><i class="fa-solid fa-check text-amber-400"></i> MicroPython & LVGL Display Developers</div>
-                            <div class="flex items-center gap-3"><i class="fa-solid fa-check text-amber-400"></i> Hardware Schematic & PCB Designers (Kicad)</div>
-                            <div class="flex items-center gap-3"><i class="fa-solid fa-check text-amber-400"></i> Cyber Security & Pentesting Tooling Testers</div>
-                        </div>
-
-                        <!-- Primary Contact Button Box -->
-                        <div class="p-4 bg-darkbg rounded-xl border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
-                            <div class="flex items-center gap-3 overflow-hidden">
-                                <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
-                                    <i class="fa-solid fa-envelope text-lg"></i>
-                                </div>
-                                <div class="truncate">
-                                    <span class="text-[10px] font-mono text-gray-400 block uppercase tracking-wider">Project Lead Contact Email</span>
-                                    <span class="text-xs sm:text-sm font-mono font-bold text-white truncate block select-all">hiremathsangamesh034@gmail.com</span>
-                                </div>
-                            </div>
-                            <div class="flex gap-2 w-full sm:w-auto shrink-0">
-                                <button onclick="copyEmailToClipboard('hiremathsangamesh034@gmail.com')" class="flex-1 sm:flex-none px-3 py-2 bg-cardbg hover:bg-bordercolor text-amber-300 border border-amber-500/30 font-mono text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5">
-                                    <i class="fa-regular fa-copy"></i> Copy
-                                </button>
-                                <a href="mailto:hiremathsangamesh034@gmail.com?subject=Joining%20M3-OS%20Project%20Development" class="flex-1 sm:flex-none px-4 py-2 bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5">
-                                    <i class="fa-solid fa-paper-plane"></i> Email Now
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Interactive Developer Join Form -->
-                    <div class="bg-cardbg/90 p-6 rounded-xl border border-bordercolor space-y-4">
-                        <h3 class="text-base font-mono font-bold text-white border-b border-bordercolor pb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-user-plus text-amber-400"></i> Join Early Developer Access List
-                        </h3>
-
-                        <form id="devJoinForm" onsubmit="submitDevInterest(event)" class="space-y-3 text-xs font-mono">
-                            <div>
-                                <label class="block text-gray-400 mb-1">Your Name / Alias:</label>
-                                <input type="text" id="devName" required placeholder="e.g. Neo / Alex" class="w-full bg-darkbg border border-bordercolor rounded-lg px-3 py-2 text-white focus:outline-none focus:border-amber-400">
-                            </div>
-                            <div>
-                                <label class="block text-gray-400 mb-1">Your Email Address:</label>
-                                <input type="email" id="devEmail" required placeholder="developer@domain.com" class="w-full bg-darkbg border border-bordercolor rounded-lg px-3 py-2 text-white focus:outline-none focus:border-amber-400">
-                            </div>
-                            <div>
-                                <label class="block text-gray-400 mb-1">Your Core Skillset / Interest:</label>
-                                <select id="devRole" class="w-full bg-darkbg border border-bordercolor rounded-lg px-3 py-2 text-white focus:outline-none focus:border-amber-400">
-                                    <option value="c_cpp">Embedded C / C++ Developer</option>
-                                    <option value="python">MicroPython / Software App Dev</option>
-                                    <option value="hardware">Hardware / PCB / Extension Design</option>
-                                    <option value="security">Penetration Testing / Security Research</option>
-                                    <option value="ui_ux">UI/UX Design & Graphics</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-gray-400 mb-1">Message / Ideas for MOS:</label>
-                                <textarea id="devMsg" rows="2" placeholder="Tell us what you'd like to build or help with..." class="w-full bg-darkbg border border-bordercolor rounded-lg px-3 py-2 text-white focus:outline-none focus:border-amber-400"></textarea>
-                            </div>
-                            <button type="submit" class="glitch-btn w-full py-3 bg-amber-400 hover:bg-amber-300 text-black font-mono font-bold text-xs rounded-lg flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-rocket"></i> Submit Interest to Founder
-                            </button>
-                        </form>
-                        <div id="devFormSuccess" class="hidden p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono rounded-lg text-center">
-                            <i class="fa-solid fa-circle-check mr-1"></i> Interest received! Email saved to local storage & logged.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Four OS Variant Concepts Cards -->
-        <section id="variants" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold font-mono text-white mb-2">Planned OS Variants</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto text-xs sm:text-sm">Explore the four modular personalities conceptualized for the M³-OS ecosystem.</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                
-                <!-- MOS-Core Card -->
-                <div class="glass-card rounded-2xl p-5 flex flex-col justify-between border-t-4 border-t-core hover:shadow-glow-core transition-all duration-300 relative overflow-hidden group">
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-core/10 text-core border border-core/30">Python RTOS</span>
-                            <span class="text-[10px] font-mono text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded">In Design</span>
-                        </div>
-                        <h3 class="text-xl font-bold font-mono text-white mb-1 flex items-center gap-2">
-                            <i class="fa-solid fa-brain text-core"></i> MOS-Core
-                        </h3>
-                        <p class="text-xs text-core font-mono mb-3">Real-Time MicroPython OS</p>
-                        <p class="text-xs text-gray-300 mb-4">Combines Python ease-of-use with preemptive multitasking and a Zephyr-like kernel API.</p>
-
-                        <div class="space-y-1.5 mb-4 text-[11px] font-mono text-gray-300">
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-core"></i> Preemptive Scheduler Concept</div>
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-core"></i> Threads, Queues & Semaphores</div>
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-core"></i> Asyncio + _thread support</div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 pt-4 border-t border-bordercolor/60 flex items-center justify-between">
-                        <span class="text-[10px] font-mono text-gray-400">Target: ~1.2 MB</span>
-                        <button onclick="openWaitlistModal('MOS-Core Concept')" class="glitch-btn px-3 py-1.5 bg-core text-black font-mono font-bold text-xs rounded-md">
-                            Join Early Dev
-                        </button>
-                    </div>
-                </div>
-
-                <!-- MOS-LCD Card -->
-                <div class="glass-card rounded-2xl p-5 flex flex-col justify-between border-t-4 border-t-lcd hover:shadow-glow-lcd transition-all duration-300 relative overflow-hidden group">
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-lcd/10 text-lcd border border-lcd/30">GUI Engine</span>
-                            <span class="text-[10px] font-mono text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded">In Design</span>
-                        </div>
-                        <h3 class="text-xl font-bold font-mono text-white mb-1 flex items-center gap-2">
-                            <i class="fa-solid fa-display text-lcd"></i> MOS-LCD
-                        </h3>
-                        <p class="text-xs text-lcd font-mono mb-3">GUI Touchscreen OS</p>
-                        <p class="text-xs text-gray-300 mb-4">Build interactive touchscreen UIs with customizable app extensions, themes, and backgrounds.</p>
-
-                        <div class="space-y-1.5 mb-4 text-[11px] font-mono text-gray-300">
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-lcd"></i> ILI9341 & ST7789 Drivers</div>
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-lcd"></i> Dynamic App Engine</div>
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-puzzle-piece text-oled"></i> Customizable Layouts & Icons</div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 pt-4 border-t border-bordercolor/60 flex items-center justify-between">
-                        <span class="text-[10px] font-mono text-gray-400">Target: ~2.1 MB</span>
-                        <button onclick="openWaitlistModal('MOS-LCD Concept')" class="glitch-btn px-3 py-1.5 bg-lcd text-black font-mono font-bold text-xs rounded-md">
-                            Join Early Dev
-                        </button>
-                    </div>
-                </div>
-
-                <!-- MOS-OLED Card -->
-                <div class="glass-card rounded-2xl p-5 flex flex-col justify-between border-t-4 border-t-oled hover:shadow-glow-oled transition-all duration-300 relative overflow-hidden group">
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-oled/10 text-oled border border-oled/30">Monochrome UI</span>
-                            <span class="text-[10px] font-mono text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded">In Design</span>
-                        </div>
-                        <h3 class="text-xl font-bold font-mono text-white mb-1 flex items-center gap-2">
-                            <i class="fa-solid fa-circle-dot text-oled"></i> MOS-OLED
-                        </h3>
-                        <p class="text-xs text-oled font-mono mb-3">Sub-Variant for SSD1306</p>
-                        <p class="text-xs text-gray-300 mb-4">Ultra-lightweight monochrome micro-OS optimized for 0.96" and 1.3" I2C OLED screens with high FPS.</p>
-
-                        <div class="space-y-1.5 mb-4 text-[11px] font-mono text-gray-300">
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-oled"></i> Direct I2C Frame Buffer</div>
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-oled"></i> Ultra Low RAM Footprint</div>
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-oled"></i> Compact Menu & Widgets</div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 pt-4 border-t border-bordercolor/60 flex items-center justify-between">
-                        <span class="text-[10px] font-mono text-gray-400">Target: ~600 KB</span>
-                        <button onclick="openWaitlistModal('MOS-OLED Concept')" class="glitch-btn px-3 py-1.5 bg-oled text-black font-mono font-bold text-xs rounded-md">
-                            Join Early Dev
-                        </button>
-                    </div>
-                </div>
-
-                <!-- MOS-Hack Card -->
-                <div class="glass-card rounded-2xl p-5 flex flex-col justify-between border-t-4 border-t-hack hover:shadow-glow-hack transition-all duration-300 relative overflow-hidden group">
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-hack/10 text-hack border border-hack/30">Native Pentest</span>
-                            <span class="text-[10px] font-mono text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded">In Design</span>
-                        </div>
-                        <h3 class="text-xl font-bold font-mono text-white mb-1 flex items-center gap-2">
-                            <i class="fa-solid fa-user-ninja text-hack"></i> MOS-Hack
-                        </h3>
-                        <p class="text-xs text-hack font-mono mb-3">Native C/C++ Security Suite</p>
-                        <p class="text-xs text-gray-300 mb-4">Low-level raw packet injection, Bluetooth scanning, and USB HID ducky script payloads.</p>
-
-                        <div class="space-y-1.5 mb-4 text-[11px] font-mono text-gray-300">
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-hack"></i> 802.11 Deauth & PMKID</div>
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-hack"></i> BadUSB Keyboard Injection</div>
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-check text-hack"></i> Sub-GHz Hardware Support</div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 pt-4 border-t border-bordercolor/60 flex items-center justify-between">
-                        <span class="text-[10px] font-mono text-gray-400">Target: ~3.4 MB</span>
-                        <button onclick="openWaitlistModal('MOS-Hack Concept')" class="glitch-btn px-3 py-1.5 bg-hack text-white font-mono font-bold text-xs rounded-md">
-                            Join Early Dev
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Conceptual Hardware & Software Extensions Hub -->
-        <section id="extensions" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold font-mono text-white mb-2">Modular Extensions Concept</h2>
-                <p class="text-gray-400 text-xs sm:text-sm max-w-2xl mx-auto">Software apps, custom UI background themes, and hardware expansion boards designed for MOS.</p>
-            </div>
-
-            <!-- Filter Buttons -->
-            <div class="flex justify-center gap-3 mb-8">
-                <button onclick="filterExtensions('all')" id="ext-filter-all" class="px-4 py-2 font-mono text-xs font-bold rounded-lg bg-oled text-black transition-all">All Extensions</button>
-                <button onclick="filterExtensions('software')" id="ext-filter-software" class="px-4 py-2 font-mono text-xs font-bold rounded-lg bg-cardbg text-gray-300 border border-bordercolor hover:border-oled transition-all">Software Apps & Themes</button>
-                <button onclick="filterExtensions('hardware')" id="ext-filter-hardware" class="px-4 py-2 font-mono text-xs font-bold rounded-lg bg-cardbg text-gray-300 border border-bordercolor hover:border-lcd transition-all">Hardware Add-ons</button>
-            </div>
-
-            <!-- Extension Grid -->
-            <div id="extensions-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Populated dynamically via JS -->
-            </div>
-        </section>
-
-        <!-- Interactive Comparison Table -->
-        <section id="comparison" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold font-mono text-white mb-2">Technical Concept Specs</h2>
-                <p class="text-gray-400 text-xs sm:text-sm max-w-xl mx-auto">Comparison of planned features and resource budgets for all 4 MOS variants.</p>
-            </div>
-
-            <div class="glass-card rounded-2xl overflow-hidden border border-bordercolor shadow-xl">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm border-collapse">
-                        <thead>
-                            <tr class="bg-cardbg border-b border-bordercolor text-xs font-mono uppercase tracking-wider text-gray-400">
-                                <th class="py-4 px-5">Metric / Feature</th>
-                                <th class="py-4 px-5 text-core">MOS-Core</th>
-                                <th class="py-4 px-5 text-lcd">MOS-LCD</th>
-                                <th class="py-4 px-5 text-oled">MOS-OLED</th>
-                                <th class="py-4 px-5 text-hack">MOS-Hack</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-bordercolor/60 font-mono text-xs text-gray-300">
-                            <tr class="hover:bg-cardbg/50 transition-colors">
-                                <td class="py-3.5 px-5 font-bold text-white">Language / Stack</td>
-                                <td class="py-3.5 px-5">MicroPython 1.20</td>
-                                <td class="py-3.5 px-5">MicroPython + LVGL</td>
-                                <td class="py-3.5 px-5 text-oled">Slim MicroPython</td>
-                                <td class="py-3.5 px-5 text-hack font-bold">Native C / C++17</td>
-                            </tr>
-                            <tr class="hover:bg-cardbg/50 transition-colors">
-                                <td class="py-3.5 px-5 font-bold text-white">Display Support</td>
-                                <td class="py-3.5 px-5 text-gray-500">Console / Headless</td>
-                                <td class="py-3.5 px-5 text-emerald-400">ILI9341 / ST7789 Touch</td>
-                                <td class="py-3.5 px-5 text-oled font-bold">SSD1306 / SH1106 (I2C)</td>
-                                <td class="py-3.5 px-5 text-amber-400">Optional Minimal LCD</td>
-                            </tr>
-                            <tr class="hover:bg-cardbg/50 transition-colors">
-                                <td class="py-3.5 px-5 font-bold text-white">Software Extensions Support</td>
-                                <td class="py-3.5 px-5 text-gray-500">Scripts Only</td>
-                                <td class="py-3.5 px-5 text-emerald-400 font-bold">✅ Full UI Apps & Icons</td>
-                                <td class="py-3.5 px-5 text-oled font-bold">✅ Slim Micro-Widgets</td>
-                                <td class="py-3.5 px-5 text-gray-500">Native Modules Only</td>
-                            </tr>
-                            <tr class="hover:bg-cardbg/50 transition-colors">
-                                <td class="py-3.5 px-5 font-bold text-white">Hardware Expansion Header</td>
-                                <td class="py-3.5 px-5 text-emerald-400">✅ SPI/I2C/UART</td>
-                                <td class="py-3.5 px-5 text-emerald-400">✅ Touch + GPIO</td>
-                                <td class="py-3.5 px-5 text-emerald-400">✅ I2C Sensor Bus</td>
-                                <td class="py-3.5 px-5 text-emerald-400 font-bold">✅ RF & USB Header</td>
-                            </tr>
-                            <tr class="hover:bg-cardbg/50 transition-colors">
-                                <td class="py-3.5 px-5 font-bold text-white">Target RAM Usage</td>
-                                <td class="py-3.5 px-5 text-core">~80 KB</td>
-                                <td class="py-3.5 px-5 text-lcd">~120 KB</td>
-                                <td class="py-3.5 px-5 text-oled font-bold">~45 KB</td>
-                                <td class="py-3.5 px-5 text-hack">~150 KB</td>
-                            </tr>
-                            <tr class="hover:bg-cardbg/50 transition-colors">
-                                <td class="py-3.5 px-5 font-bold text-white">Project Status</td>
-                                <td class="py-3.5 px-5 text-amber-400">Concept Phase</td>
-                                <td class="py-3.5 px-5 text-amber-400">Concept Phase</td>
-                                <td class="py-3.5 px-5 text-amber-400">Concept Phase</td>
-                                <td class="py-3.5 px-5 text-amber-400">Concept Phase</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- Development Roadmap & Early Access -->
-        <section id="downloads" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold font-mono text-white mb-2">Development Roadmap & Releases</h2>
-                <p class="text-gray-400 text-xs sm:text-sm max-w-xl mx-auto">Track current development progress and sign up for pre-release build notifications.</p>
-            </div>
-
-            <div class="glass-card rounded-2xl p-6 sm:p-8 border border-bordercolor">
-                
-                <!-- Tab Buttons -->
-                <div class="flex flex-wrap border-b border-bordercolor mb-6 gap-2">
-                    <button id="tab-core" onclick="selectDownloadTab('core')" class="py-2.5 px-4 font-mono text-xs font-bold rounded-t-lg border-b-2 border-core text-core bg-core/10 transition-all">
-                        🧠 MOS-Core Roadmap
-                    </button>
-                    <button id="tab-lcd" onclick="selectDownloadTab('lcd')" class="py-2.5 px-4 font-mono text-xs font-bold rounded-t-lg border-b-2 border-transparent text-gray-400 hover:text-white transition-all">
-                        📺 MOS-LCD Roadmap
-                    </button>
-                    <button id="tab-oled" onclick="selectDownloadTab('oled')" class="py-2.5 px-4 font-mono text-xs font-bold rounded-t-lg border-b-2 border-transparent text-gray-400 hover:text-white transition-all">
-                        🔘 MOS-OLED Roadmap
-                    </button>
-                    <button id="tab-hack" onclick="selectDownloadTab('hack')" class="py-2.5 px-4 font-mono text-xs font-bold rounded-t-lg border-b-2 border-transparent text-gray-400 hover:text-white transition-all">
-                        🥷 MOS-Hack Roadmap
-                    </button>
-                </div>
-
-                <!-- Tab Content Panel -->
-                <div id="download-panel-content">
-                    <!-- Dynamic Javascript Content Rendered Here -->
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Custom Firmware Builder Mockup -->
-        <section id="builder" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold font-mono text-white mb-2">Firmware Configurator Concept</h2>
-                <p class="text-gray-400 text-xs sm:text-sm max-w-xl mx-auto">Simulate how custom MOS firmware modules and extensions will be compiled.</p>
-            </div>
-
-            <div class="grid lg:grid-cols-3 gap-8">
-                <!-- Configuration Controls -->
-                <div class="lg:col-span-2 glass-card rounded-2xl p-6 border border-bordercolor space-y-6">
-                    <h3 class="text-lg font-mono font-bold text-white flex items-center gap-2 border-b border-bordercolor pb-3">
-                        <i class="fa-solid fa-sliders text-core"></i> Select Proposed Modules
-                    </h3>
-
-                    <div class="grid sm:grid-cols-2 gap-4">
-                        <label class="flex items-start gap-3 p-3 rounded-lg bg-cardbg/60 border border-bordercolor cursor-pointer hover:border-core transition-colors">
-                            <input type="checkbox" checked disabled class="mt-1 accent-core rounded">
-                            <div>
-                                <span class="font-mono text-xs font-bold text-white block">MOS Preemptive Kernel</span>
-                                <span class="text-xs text-gray-400">Core kernel scheduler</span>
-                            </div>
-                        </label>
-
-                        <label class="flex items-start gap-3 p-3 rounded-lg bg-cardbg/60 border border-bordercolor cursor-pointer hover:border-lcd transition-colors">
-                            <input type="checkbox" id="mod-display" onchange="updateBuilderCalculations()" class="mt-1 accent-lcd rounded">
-                            <div>
-                                <span class="font-mono text-xs font-bold text-white block">TFT Display / LVGL Engine</span>
-                                <span class="text-xs text-gray-400">+40KB RAM / ILI9341 & Touch</span>
-                            </div>
-                        </label>
-
-                        <label class="flex items-start gap-3 p-3 rounded-lg bg-cardbg/60 border border-bordercolor cursor-pointer hover:border-oled transition-colors">
-                            <input type="checkbox" id="mod-oled-driver" onchange="updateBuilderCalculations()" class="mt-1 accent-oled rounded">
-                            <div>
-                                <span class="font-mono text-xs font-bold text-white block">MOS-OLED I2C Driver Stack</span>
-                                <span class="text-xs text-gray-400">+12KB RAM / SSD1306 mono support</span>
-                            </div>
-                        </label>
-
-                        <label class="flex items-start gap-3 p-3 rounded-lg bg-cardbg/60 border border-bordercolor cursor-pointer hover:border-oled transition-colors">
-                            <input type="checkbox" id="mod-ext-apps" checked onchange="updateBuilderCalculations()" class="mt-1 accent-oled rounded">
-                            <div>
-                                <span class="font-mono text-xs font-bold text-white block">Software Extensions Runtime</span>
-                                <span class="text-xs text-gray-400">+18KB RAM / Dynamic app loader</span>
-                            </div>
-                        </label>
-
-                        <label class="flex items-start gap-3 p-3 rounded-lg bg-cardbg/60 border border-bordercolor cursor-pointer hover:border-hack transition-colors">
-                            <input type="checkbox" id="mod-pentest" onchange="updateBuilderCalculations()" class="mt-1 accent-hack rounded">
-                            <div>
-                                <span class="font-mono text-xs font-bold text-white block">Raw Wi-Fi Frame Injector</span>
-                                <span class="text-xs text-gray-400">+35KB RAM / Security tools</span>
-                            </div>
-                        </label>
-
-                        <label class="flex items-start gap-3 p-3 rounded-lg bg-cardbg/60 border border-bordercolor cursor-pointer hover:border-core transition-colors">
-                            <input type="checkbox" id="mod-mqtt" checked onchange="updateBuilderCalculations()" class="mt-1 accent-core rounded">
-                            <div>
-                                <span class="font-mono text-xs font-bold text-white block">Async MQTT & TLS Client</span>
-                                <span class="text-xs text-gray-400">+20KB RAM / Cloud stack</span>
-                            </div>
-                        </label>
-                    </div>
-
-                    <div class="border-t border-bordercolor pt-4">
-                        <label class="block text-xs font-mono text-gray-400 mb-2">Target ESP32 Partition Size:</label>
-                        <select id="flash-size" onchange="updateBuilderCalculations()" class="w-full bg-darkbg border border-bordercolor rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-core">
-                            <option value="4">4MB Flash (Standard ESP32-WROOM)</option>
-                            <option value="8">8MB Flash (Extended ESP32-WROVER)</option>
-                            <option value="16">16MB Flash (Custom Hardware)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Live Resource Calculation Box -->
-                <div class="glass-card rounded-2xl p-6 border border-bordercolor flex flex-col justify-between">
-                    <div>
-                        <h3 class="text-lg font-mono font-bold text-white border-b border-bordercolor pb-3 mb-4">
-                            Resource Concept
-                        </h3>
-
-                        <div class="space-y-4 mb-6">
-                            <div>
-                                <div class="flex justify-between text-xs font-mono mb-1">
-                                    <span class="text-gray-400">Estimated RAM Allocation:</span>
-                                    <span id="ram-calc-text" class="text-core font-bold">118 KB / 520 KB</span>
-                                </div>
-                                <div class="w-full h-2 bg-darkbg rounded-full overflow-hidden border border-bordercolor">
-                                    <div id="ram-bar" class="h-full bg-core transition-all duration-300" style="width: 22%"></div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between text-xs font-mono mb-1">
-                                    <span class="text-gray-400">Estimated ROM Size:</span>
-                                    <span id="rom-calc-text" class="text-lcd font-bold">1.8 MB / 4 MB</span>
-                                </div>
-                                <div class="w-full h-2 bg-darkbg rounded-full overflow-hidden border border-bordercolor">
-                                    <div id="rom-bar" class="h-full bg-lcd transition-all duration-300" style="width: 45%"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-3 bg-darkbg rounded-lg border border-bordercolor font-mono text-xs text-gray-300 mb-4">
-                            <p class="text-gray-500 mb-1">// Calculated Flash Command:</p>
-                            <code id="custom-build-cmd" class="text-emerald-400 break-all select-all">esptool.py --chip esp32 write_flash 0x1000 mos_custom_concept.bin</code>
-                        </div>
-                    </div>
-
-                    <button onclick="openWaitlistModal('Custom Configurator Preview')" class="glitch-btn w-full bg-amber-400 text-black font-mono font-bold text-xs py-3 rounded-lg flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-code font-bold"></i> Request Builder Early Access
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Terminal REPL Simulator -->
-        <section id="terminal" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold font-mono text-white mb-2">Interactive Terminal REPL Concept</h2>
-                <p class="text-gray-400 text-xs sm:text-sm max-w-xl mx-auto">Experience how the proposed MOS command shell will work directly in your browser.</p>
-            </div>
-
-            <div class="glass-card rounded-2xl overflow-hidden border border-bordercolor shadow-2xl max-w-4xl mx-auto">
-                <div class="bg-cardbg px-4 py-3 border-b border-bordercolor flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
-                        <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
-                        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                        <span class="font-mono text-xs text-gray-400 ml-2">webserial://simulated-esp32-mos (115200 baud)</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="clearTerminal()" class="px-2 py-1 text-xs font-mono text-gray-400 hover:text-white bg-darkbg rounded border border-bordercolor">Clear</button>
-                        <button onclick="rebootSimulator()" class="px-2 py-1 text-xs font-mono text-core hover:bg-core/10 bg-darkbg rounded border border-core/30">Reboot</button>
-                    </div>
-                </div>
-
-                <div id="term-body" class="terminal-screen p-4 h-80 overflow-y-auto font-mono text-xs leading-relaxed space-y-1">
-                    <div class="text-amber-400 font-bold">[M³-OS SIMULATOR - PROJECT IN DEVELOPMENT]</div>
-                    <div class="text-gray-500">Type <span class="text-core font-bold">help()</span> to explore conceptual system shell commands.</div>
-                    <div class="text-emerald-400 font-bold">mos-core&gt;&gt; Ready.</div>
-                </div>
-
-                <div class="p-3 bg-darkbg border-t border-bordercolor flex items-center gap-2">
-                    <span class="font-mono text-xs text-core font-bold">mos-core&gt;&gt;</span>
-                    <input type="text" id="term-input" onkeydown="handleTerminalCommand(event)" placeholder="Type command e.g. status(), help(), oled.draw(), scan_wifi()..." class="flex-1 bg-transparent font-mono text-xs text-white focus:outline-none">
-                    <button onclick="submitTerminalInput()" class="px-3 py-1 bg-core text-black font-mono font-bold text-xs rounded hover:bg-core/80">
-                        Send
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Waitlist / Early Dev Modal -->
-        <div id="waitlistModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
-            <div class="glass-card rounded-2xl p-6 sm:p-8 border border-amber-500/40 max-w-md w-full mx-4 shadow-glow-lcd relative">
-                <button onclick="closeWaitlistModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-                <div class="text-center mb-6">
-                    <div class="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mx-auto mb-3 text-amber-400">
-                        <i class="fa-solid fa-code-branch text-xl"></i>
-                    </div>
-                    <h3 id="modal-title" class="text-xl font-bold font-mono text-white mb-1">Get Early Developer Access</h3>
-                    <p class="text-xs text-gray-400">Leave your email to get notified when initial MOS test binaries and repos go live.</p>
-                </div>
-                <form onsubmit="handleWaitlistSubmit(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-mono text-gray-400 mb-1">Developer Email:</label>
-                        <input type="email" id="waitlist-email" required placeholder="developer@domain.com" class="w-full bg-darkbg border border-bordercolor rounded-lg px-3 py-2.5 text-xs font-mono text-white focus:outline-none focus:border-amber-400">
-                    </div>
-                    <button type="submit" class="glitch-btn w-full bg-amber-400 text-black font-mono font-bold text-xs py-3 rounded-lg flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> Submit Access Request
-                    </button>
-                </form>
+            <div class="flex items-center space-x-6">
+                <span>Contact: hiremathsangamesh034@gmail.com</span>
+                <span>Licensed under MIT</span>
             </div>
         </div>
+    </footer>
 
-        <!-- Footer -->
-        <footer class="mt-auto border-t border-bordercolor/80 bg-darkbg py-8 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs text-gray-500">
-                <div class="flex flex-col sm:flex-row items-center gap-2">
-                    <span class="text-white font-bold">M³-OS (MOS)</span>
-                    <span>Conceptual Project under Active Development. Founded by <strong class="text-amber-400">Sangamesh Hiremath</strong>.</span>
-                </div>
-                <div class="flex items-center gap-4">
-                    <button onclick="copyEmailToClipboard('hiremathsangamesh034@gmail.com')" class="text-amber-400 hover:underline flex items-center gap-1">
-                        <i class="fa-solid fa-envelope"></i> hiremathsangamesh034@gmail.com
-                    </button>
-                </div>
-            </div>
-        </footer>
-
-    </div>
-
-    <!-- JavaScript Application Logic -->
     <script>
-        // 1. Interactive Background Canvas Animation
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        const gridNodes = [];
-        const numNodes = 40;
-
-        for (let i = 0; i < numNodes; i++) {
-            gridNodes.push({
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-                vx: (Math.random() - 0.5) * 0.4,
-                vy: (Math.random() - 0.5) * 0.4,
-                radius: Math.random() * 1.5 + 1
-            });
-        }
-
-        function drawBackground() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'rgba(48, 54, 61, 0.25)';
-            ctx.lineWidth = 1;
-
-            for (let i = 0; i < numNodes; i++) {
-                for (let j = i + 1; j < numNodes; j++) {
-                    const dx = gridNodes[i].x - gridNodes[j].x;
-                    const dy = gridNodes[i].y - gridNodes[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 150) {
-                        ctx.beginPath();
-                        ctx.moveTo(gridNodes[i].x, gridNodes[i].y);
-                        ctx.lineTo(gridNodes[j].x, gridNodes[j].y);
-                        ctx.stroke();
-                    }
-                }
+        // Initialize Lucide Icons after DOM load
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
             }
-
-            for (let i = 0; i < numNodes; i++) {
-                const node = gridNodes[i];
-                node.x += node.vx;
-                node.y += node.vy;
-
-                if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
-                if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
-
-                ctx.fillStyle = i % 4 === 0 ? '#00A8FF' : (i % 4 === 1 ? '#FF8C00' : (i % 4 === 2 ? '#00FFC4' : '#FF0040'));
-                ctx.beginPath();
-                ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            requestAnimationFrame(drawBackground);
-        }
-        drawBackground();
-
-        // Mobile Menu Toggle
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            const menu = document.getElementById('mobileMenu');
-            menu.classList.toggle('hidden');
         });
 
-        // 2. Extensions Marketplace Data
-        const extensionsData = [
-            {
-                id: 'ext-1',
-                type: 'software',
-                title: 'CyberDeck Launcher Concept',
-                category: 'Software UI App',
-                compat: 'MOS-LCD / MOS-OLED',
-                desc: 'A retro sci-fi launcher interface featuring custom layouts, clock widgets, and system battery dials.',
-                author: 'Planned Core App',
-                downloads: 'Concept Phase',
-                status: 'In Design'
-            },
-            {
-                id: 'ext-2',
-                type: 'software',
-                title: 'Neon Matrix Icon Pack',
-                category: 'Custom Theme & Icons',
-                compat: 'MOS-LCD',
-                desc: 'Replace default system icons with razor-sharp neon glyphs optimized for ILI9341 IPS displays.',
-                author: 'Design Spec',
-                downloads: 'Concept Phase',
-                status: 'In Design'
-            },
-            {
-                id: 'ext-3',
-                type: 'software',
-                title: 'Monochrome Weather Widget',
-                category: 'Software Micro-App',
-                compat: 'MOS-OLED',
-                desc: 'Ultra-efficient weather fetcher app customized for 128x64 SSD1306 displays.',
-                author: 'Design Spec',
-                downloads: 'Concept Phase',
-                status: 'In Design'
-            },
-            {
-                id: 'ext-4',
-                type: 'hardware',
-                title: 'CC1101 Sub-GHz Expansion Hat',
-                category: 'Hardware Module',
-                compat: 'MOS-Hack / MOS-Core',
-                desc: 'SPI hardware daughterboard for 433MHz/868MHz wireless signal sniffing and replay experiments.',
-                author: 'Hardware Spec',
-                downloads: 'Kicad Concept',
-                status: 'PCB Planned'
-            },
-            {
-                id: 'ext-5',
-                type: 'hardware',
-                title: 'Rotary Encoder + Click Wheel',
-                category: 'Hardware Input Board',
-                compat: 'MOS-LCD / MOS-OLED',
-                desc: 'Physical click encoder board designed for menu navigation without touch screens.',
-                author: 'Hardware Spec',
-                downloads: 'Schematic Phase',
-                status: 'PCB Planned'
-            },
-            {
-                id: 'ext-6',
-                type: 'software',
-                title: 'Matrix Digital Rain Screensaver',
-                category: 'Custom Background',
-                compat: 'MOS-LCD / MOS-Core',
-                desc: 'Animated cyberpunk digital rain screensaver that triggers after 60s of idle time.',
-                author: 'Design Spec',
-                downloads: 'Concept Phase',
-                status: 'In Design'
-            }
-        ];
-
-        function renderExtensions(filter = 'all') {
-            const grid = document.getElementById('extensions-grid');
-            grid.innerHTML = '';
-
-            const filtered = filter === 'all' ? extensionsData : extensionsData.filter(e => e.type === filter);
-
-            filtered.forEach(ext => {
-                const card = document.createElement('div');
-                card.className = `glass-card rounded-2xl p-5 flex flex-col justify-between border ${ext.type === 'software' ? 'border-oled/40 hover:shadow-glow-oled' : 'border-lcd/40 hover:shadow-glow-lcd'} transition-all`;
-                
-                card.innerHTML = `
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold ${ext.type === 'software' ? 'bg-oled/10 text-oled border border-oled/30' : 'bg-lcd/10 text-lcd border border-lcd/30'}">${ext.category}</span>
-                            <span class="text-[10px] font-mono text-amber-400"><i class="fa-solid fa-clock mr-1"></i>${ext.status}</span>
-                        </div>
-                        <h4 class="text-base font-bold font-mono text-white mb-1">${ext.title}</h4>
-                        <p class="text-[11px] font-mono text-gray-400 mb-2">Compat: <span class="text-gray-200">${ext.compat}</span></p>
-                        <p class="text-xs text-gray-300 mb-4">${ext.desc}</p>
-                    </div>
-
-                    <div class="pt-3 border-t border-bordercolor/60 flex items-center justify-between">
-                        <span class="text-[10px] font-mono text-gray-500">${ext.author}</span>
-                        <button onclick="openWaitlistModal('${ext.title}')" class="px-3 py-1.5 rounded text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30">
-                            Join Dev
-                        </button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function filterExtensions(type) {
-            document.getElementById('ext-filter-all').className = `px-4 py-2 font-mono text-xs font-bold rounded-lg ${type === 'all' ? 'bg-oled text-black' : 'bg-cardbg text-gray-300 border border-bordercolor'}`;
-            document.getElementById('ext-filter-software').className = `px-4 py-2 font-mono text-xs font-bold rounded-lg ${type === 'software' ? 'bg-oled text-black' : 'bg-cardbg text-gray-300 border border-bordercolor'}`;
-            document.getElementById('ext-filter-hardware').className = `px-4 py-2 font-mono text-xs font-bold rounded-lg ${type === 'hardware' ? 'bg-lcd text-black' : 'bg-cardbg text-gray-300 border border-bordercolor'}`;
-            renderExtensions(type);
-        }
-
-        renderExtensions('all');
-
-        // 3. Roadmap Data
-        const downloadData = {
-            core: {
-                title: "MOS-Core Development Roadmap",
-                color: "core",
-                stage: "Phase 1: Preemptive Kernel Architecture Specification",
-                desc: "Designing MicroPython thread primitives & Zephyr-inspired OS queues for dual-core ESP32."
-            },
-            lcd: {
-                title: "MOS-LCD Development Roadmap",
-                color: "lcd",
-                stage: "Phase 1: LVGL Memory Layout & App Extension Engine",
-                desc: "Establishing sandboxed Python app structures, theme configurations, and display touch drivers."
-            },
-            oled: {
-                title: "MOS-OLED Development Roadmap",
-                color: "oled",
-                stage: "Phase 1: I2C Monochrome Frame Buffer Optimization",
-                desc: "Creating minimal monochrome font renders and fast SSD1306 updates with low RAM footprint."
-            },
-            hack: {
-                title: "MOS-Hack Development Roadmap",
-                color: "hack",
-                stage: "Phase 1: Native C++ ESP-IDF Radio Injection Layer",
-                desc: "Low-level 802.11 frame construction and BadUSB HID script interpretor design."
-            }
-        };
-
-        function selectDownloadTab(variant) {
-            const tabs = ['core', 'lcd', 'oled', 'hack'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                if (t === variant) {
-                    btn.className = `py-2.5 px-4 font-mono text-xs font-bold rounded-t-lg border-b-2 border-${t === 'oled' ? 'oled' : t} text-${t === 'oled' ? 'oled' : t} bg-${t === 'oled' ? 'oled' : t}/10 transition-all`;
-                } else {
-                    btn.className = `py-2.5 px-4 font-mono text-xs font-bold rounded-t-lg border-b-2 border-transparent text-gray-400 hover:text-white transition-all`;
-                }
-            });
-
-            const data = downloadData[variant];
-            const panel = document.getElementById('download-panel-content');
+        // Email copy function
+        function copyEmail() {
+            const email = "hiremathsangamesh034@gmail.com";
+            const btn = document.getElementById('copyBtn');
             
-            panel.innerHTML = `
-                <div class="space-y-6">
-                    <div>
-                        <div class="flex items-center gap-3 mb-1">
-                            <h4 class="text-lg font-mono font-bold text-white">${data.title}</h4>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/20 text-amber-400 border border-amber-500/40">In Active Development</span>
-                        </div>
-                        <p class="text-xs text-gray-400">${data.desc}</p>
-                    </div>
-
-                    <div class="p-6 bg-darkbg rounded-xl border border-bordercolor space-y-4">
-                        <div class="flex items-center justify-between font-mono text-xs">
-                            <span class="text-gray-300 font-bold"><i class="fa-solid fa-list-check text-${data.color} mr-2"></i>Current Status: ${data.stage}</span>
-                            <span class="text-amber-400">0% Binaries Publicly Released</span>
-                        </div>
-                        
-                        <p class="text-xs text-gray-400 leading-relaxed">
-                            Since the project is currently in the conceptual / early planning phase, pre-compiled .bin firmware files are not yet available for direct flash. Developers who want early access to test repos can sign up below.
-                        </p>
-
-                        <div class="flex flex-wrap gap-3 pt-2">
-                            <button onclick="openWaitlistModal('${data.title}')" class="glitch-btn px-5 py-2.5 bg-amber-400 text-black font-mono font-bold text-xs rounded-lg flex items-center gap-2">
-                                <i class="fa-solid fa-bell"></i> Request Pre-Release Notification
-                            </button>
-                            <a href="#join-project" class="px-5 py-2.5 bg-cardbg hover:bg-bordercolor text-gray-200 border border-bordercolor font-mono text-xs rounded-lg flex items-center gap-2">
-                                <i class="fa-solid fa-code"></i> Contribute Code / Schematics
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function copyEmailToClipboard(email) {
-            const textarea = document.createElement('textarea');
-            textarea.value = email;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            alert(`Email address (${email}) copied to clipboard!`);
-        }
-
-        // 4. Custom Firmware Configurator Calculation
-        function updateBuilderCalculations() {
-            let baseRam = 80;
-            let baseRom = 1.2;
-
-            if (document.getElementById('mod-display').checked) { baseRam += 40; baseRom += 0.8; }
-            if (document.getElementById('mod-oled-driver').checked) { baseRam += 12; baseRom += 0.3; }
-            if (document.getElementById('mod-ext-apps').checked) { baseRam += 18; baseRom += 0.4; }
-            if (document.getElementById('mod-pentest').checked) { baseRam += 35; baseRom += 1.1; }
-            if (document.getElementById('mod-mqtt').checked) { baseRam += 20; baseRom += 0.2; }
-
-            const flashCap = parseInt(document.getElementById('flash-size').value);
-
-            const ramPercent = Math.min(100, Math.round((baseRam / 520) * 100));
-            document.getElementById('ram-calc-text').innerText = `${baseRam} KB / 520 KB`;
-            document.getElementById('ram-bar').style.width = `${ramPercent}%`;
-
-            const romPercent = Math.min(100, Math.round((baseRom / flashCap) * 100));
-            document.getElementById('rom-calc-text').innerText = `${baseRom.toFixed(1)} MB / ${flashCap} MB`;
-            document.getElementById('rom-bar').style.width = `${romPercent}%`;
-
-            document.getElementById('custom-build-cmd').innerText = `esptool.py --chip esp32 write_flash 0x1000 mos_custom_${baseRam}k_concept.bin`;
-        }
-
-        // 5. Form Submission Logic
-        function submitDevInterest(e) {
-            e.preventDefault();
-            const name = document.getElementById('devName').value;
-            const email = document.getElementById('devEmail').value;
-            const role = document.getElementById('devRole').value;
-            const msg = document.getElementById('devMsg').value;
-
-            const devData = { name, email, role, msg, date: new Date().toISOString() };
-            
-            // Save to localStorage
-            const existing = JSON.parse(localStorage.getItem('mos_dev_submissions') || '[]');
-            existing.push(devData);
-            localStorage.setItem('mos_dev_submissions', JSON.stringify(existing));
-
-            document.getElementById('devJoinForm').reset();
-            const successBox = document.getElementById('devFormSuccess');
-            successBox.classList.remove('hidden');
-            setTimeout(() => {
-                successBox.classList.add('hidden');
-            }, 5000);
-        }
-
-        // Modal Handling
-        function openWaitlistModal(variantName) {
-            document.getElementById('modal-title').innerText = `Early Access: ${variantName}`;
-            document.getElementById('waitlistModal').classList.remove('hidden');
-        }
-
-        function closeWaitlistModal() {
-            document.getElementById('waitlistModal').classList.add('hidden');
-        }
-
-        function handleWaitlistSubmit(e) {
-            e.preventDefault();
-            const email = document.getElementById('waitlist-email').value;
-            alert(`Thanks! Your email (${email}) has been logged for early development updates.`);
-            document.getElementById('waitlist-email').value = '';
-            closeWaitlistModal();
-        }
-
-        // 6. Terminal Simulator
-        function handleTerminalCommand(e) {
-            if (e.key === 'Enter') {
-                submitTerminalInput();
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(email);
+            } else {
+                let textArea = document.createElement("textarea");
+                textArea.value = email;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
             }
-        }
-
-        function submitTerminalInput() {
-            const input = document.getElementById('term-input');
-            const cmd = input.value.trim();
-            if (!cmd) return;
-
-            const term = document.getElementById('term-body');
-            term.innerHTML += `<div><span class="text-core font-bold">mos-core&gt;&gt;</span> <span class="text-white">${escapeHtml(cmd)}</span></div>`;
-            input.value = '';
-
+            
+            btn.innerText = "Copied!";
+            btn.classList.add("bg-emerald-600");
             setTimeout(() => {
-                let response = '';
-                const lower = cmd.toLowerCase();
-
-                if (lower === 'help()') {
-                    response = `
-                        <div class="text-gray-400">Conceptual Terminal Shell Commands:</div>
-                        <div class="pl-2 space-y-0.5 text-gray-300">
-                            <div>- <span class="text-core font-bold">status()</span> : Display MOS project development state</div>
-                            <div>- <span class="text-amber-400 font-bold">contact()</span> : Show founder & join details</div>
-                            <div>- <span class="text-oled font-bold">extensions.list()</span> : List software & hardware add-ons</div>
-                            <div>- <span class="text-lcd font-bold">oled.draw("text")</span> : Test SSD1306 OLED render simulator</div>
-                        </div>
-                    `;
-                } else if (lower === 'status()') {
-                    response = `<div class="text-amber-400">M³-OS Project Status: WORK IN PROGRESS / CONCEPTUAL DESIGN</div>`;
-                } else if (lower === 'contact()') {
-                    response = `<div class="text-white font-bold">Founder: Sangamesh Hiremath | Email: hiremathsangamesh034@gmail.com</div>`;
-                } else if (lower === 'extensions.list()') {
-                    response = `
-                        <div class="text-gray-300">ID  | TYPE     | NAME                  | STATUS</div>
-                        <div class="text-gray-400">-----------------------------------------------</div>
-                        <div class="text-oled">01  | Software | CyberDeck Launcher    | CONCEPT</div>
-                        <div class="text-oled">02  | Software | Neon Matrix Icons     | CONCEPT</div>
-                        <div class="text-lcd">03  | Hardware | CC1101 Sub-GHz Board  | PCB PLAN</div>
-                    `;
-                } else if (lower.startsWith('oled.draw')) {
-                    response = `<div class="text-oled">[SIMULATED OLED] 128x64 pixels drawn via I2C driver buffer OK.</div>`;
-                } else {
-                    response = `<div class="text-red-400">Command '${escapeHtml(cmd)}' not recognized. Type help() for command list.</div>`;
-                }
-
-                term.innerHTML += response;
-                term.scrollTop = term.scrollHeight;
-            }, 120);
+                btn.innerText = "Copy";
+                btn.classList.remove("bg-emerald-600");
+            }, 2000);
         }
-
-        function clearTerminal() {
-            document.getElementById('term-body').innerHTML = '<div class="text-gray-500">Terminal cleared. Ready.</div>';
-        }
-
-        function rebootSimulator() {
-            const term = document.getElementById('term-body');
-            term.innerHTML = `
-                <div class="text-amber-400">[SIMULATION REBOOT]</div>
-                <div class="text-gray-300">Initializing M³-OS Conceptual Shell...</div>
-                <div class="text-emerald-400 font-bold">mos-core&gt;&gt; Ready.</div>
-            `;
-        }
-
-        function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
-
-        // Initialize default tab and calculators
-        selectDownloadTab('core');
-        updateBuilderCalculations();
     </script>
 </body>
 </html>
