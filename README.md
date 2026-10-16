@@ -1,11 +1,17 @@
 # ⚡ M³-OS (MOS)
 > **One Board. Three Souls. Infinite Possibilities.**  
 > *A modular, multi-personality operating system ecosystem for ESP32 hardware.*
+<p align="center">
+  <img src="assets/mos-banner.png" alt="M³-OS (MOS) Banner" width="100%">
+</p>
 
-[![Project Status](https://img.shields.io/badge/Status-Under%20Development%20%2F%20Concept-orange?style=for-the-badge&logo=git)](https://github.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-[![Platform: ESP32](https://img.shields.io/badge/Platform-ESP32--WROOM-success?style=for-the-badge&logo=espressif)](https://www.espressif.com/)
-
+<h1 align="center">⚡ M³-OS (MOS)</h1>
+<p align="center"><b>One Board. Three Souls. Infinite Possibilities.</b></p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Under%20Development%2FConcept-orange?style=for-the-badge&logo=git" alt="Status">
+  <img src="https://img.shields.io/badge/Platform-ESP32--WROOM-success?style=for-the-badge&logo=espressif" alt="Platform">
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License">
+</p>
 ---
 
 ## 🌟 About the Project
