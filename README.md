@@ -2,7 +2,7 @@
 > **One Board. Three Souls. Infinite Possibilities.**  
 > *A modular, multi-personality operating system ecosystem for ESP32 hardware.*
 <p align="center">
-  <img src="assets/mos-banner.png" alt="M³-OS (MOS) Banner" width="100%">
+  <img src="_One Board. Three Souls. Infinite Possibilities._ readme photo.png" alt="M³-OS (MOS) Banner" width="100%">
 </p>
 
 <h1 align="center">⚡ M³-OS (MOS)</h1>
